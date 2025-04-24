@@ -17,7 +17,7 @@ const transformPost = (post: any) => {
 };
 
 export const PostController = {
-  async listPosts(_: Request, res: Response): Promise<void> {
+  async getAll(req: Request, res: Response): Promise<void> {
     try {
       const options = {
         sort: { createdAt: -1 as SortOrder }
@@ -27,11 +27,11 @@ export const PostController = {
       res.json(posts.map(transformPost));
     } catch (error) {
       logger.error('Erro ao listar posts:', error);
-      res.status(500).json({ message: 'Erro ao listar posts' });
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
 
-  async getPostById(req: Request, res: Response): Promise<void> {
+  async getById(req: Request, res: Response): Promise<void> {
     try {
       const post = await Post.findById(req.params.id).populate('author', 'name email');
       if (!post) {
@@ -43,11 +43,11 @@ export const PostController = {
       res.json(transformPost(post));
     } catch (error) {
       logger.error('Erro ao buscar post:', error);
-      res.status(500).json({ message: 'Erro ao buscar post' });
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
 
-  async createPost(req: Request, res: Response): Promise<void> {
+  async create(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user?.id) {
         res.status(401).json({ message: 'Usuário não autenticado' });
@@ -76,51 +76,71 @@ export const PostController = {
         return;
       }
 
-      res.status(500).json({ message: 'Erro ao criar post. Por favor, tente novamente.' });
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
 
-  async updatePost(req: Request, res: Response): Promise<void> {
+  async update(req: Request, res: Response): Promise<void> {
     try {
-      const post = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('author', 'name email');
+      const post = await Post.findById(req.params.id);
+
       if (!post) {
-        logger.warn('Post não encontrado para atualização');
+        logger.warn('Post não encontrado');
         res.status(404).json({ message: 'Post não encontrado' });
         return;
       }
+
+      if (post.author.toString() !== req.user?.id && req.user?.role !== 'admin') {
+        res.status(403).json({ message: 'Acesso negado' });
+        return;
+      }
+
+      const { title, content } = req.body;
+      post.title = title;
+      post.content = content;
+      await post.save();
+
       logger.info('Post atualizado com sucesso');
       res.json(transformPost(post));
     } catch (error) {
       logger.error('Erro ao atualizar post:', error);
-      res.status(500).json({ message: 'Erro ao atualizar post' });
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
 
-  async deletePost(req: Request, res: Response): Promise<void> {
+  async delete(req: Request, res: Response): Promise<void> {
     try {
-      const post = await Post.findByIdAndDelete(req.params.id);
+      const post = await Post.findById(req.params.id);
+
       if (!post) {
-        logger.warn('Post não encontrado para exclusão');
+        logger.warn('Post não encontrado');
         res.status(404).json({ message: 'Post não encontrado' });
         return;
       }
+
+      if (post.author.toString() !== req.user?.id && req.user?.role !== 'admin') {
+        res.status(403).json({ message: 'Acesso negado' });
+        return;
+      }
+
+      await post.deleteOne();
       logger.info('Post deletado com sucesso');
-      res.json({ message: 'Post deletado com sucesso' });
+      res.json({ message: 'Post excluído com sucesso' });
     } catch (error) {
-      logger.error('Erro ao deletar post:', error);
-      res.status(500).json({ message: 'Erro ao deletar post' });
+      logger.error('Erro ao excluir post:', error);
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
 
   async searchPosts(req: Request, res: Response): Promise<void> {
     try {
-      const { q } = req.query;
-      if (!q || typeof q !== 'string') {
+      const { query } = req.query;
+      if (!query || typeof query !== 'string') {
         res.status(400).json({ message: 'Termo de busca não fornecido' });
         return;
       }
 
-      const searchRegex = new RegExp(q, 'i');
+      const searchRegex = new RegExp(query, 'i');
       const posts = await Post.find({
         $or: [
           { title: searchRegex },
@@ -132,12 +152,17 @@ export const PostController = {
       res.json(posts.map(transformPost));
     } catch (error) {
       logger.error('Erro ao buscar posts:', error);
-      res.status(500).json({ message: 'Erro ao buscar posts' });
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
 
-  async seedPosts(_: Request, res: Response): Promise<void> {
+  async seedPosts(req: Request, res: Response): Promise<void> {
     try {
+      if (process.env.NODE_ENV !== 'development') {
+        res.status(403).json({ message: 'Acesso negado' });
+        return;
+      }
+
       const posts = await Post.create([
         {
           title: 'Introdução à Matemática',
@@ -158,7 +183,7 @@ export const PostController = {
       });
     } catch (error) {
       logger.error('Erro ao criar posts de exemplo:', error);
-      res.status(500).json({ message: 'Erro ao criar posts de exemplo' });
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   }
 }; 

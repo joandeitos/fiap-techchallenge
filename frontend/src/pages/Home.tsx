@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box } from '@mui/material';
 import PostList from '../components/PostList';
-import axios from 'axios';
+import api from '../services/api';
 import { Post } from '../types/post';
 
 export default function Home() {
@@ -10,7 +10,7 @@ export default function Home() {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get<Post[]>('/api/posts');
+      const response = await api.get<Post[]>('/api/posts');
       setPosts(response.data);
     } catch (error) {
       console.error('Erro ao carregar posts:', error);

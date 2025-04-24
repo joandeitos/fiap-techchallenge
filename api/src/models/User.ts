@@ -1,5 +1,6 @@
 import mongoose, { Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import validator from 'validator';
 
 /**
  * @swagger
@@ -47,22 +48,34 @@ export interface IUser extends Document {
   password: string;
   role: 'admin' | 'professor' | 'aluno';
   discipline?: string;
+  isActive: boolean;
+  lastLogin?: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: [true, 'Nome é obrigatório'],
+    trim: true,
+    minlength: [3, 'Nome deve ter pelo menos 3 caracteres']
   },
   email: {
     type: String,
-    required: true,
-    unique: true
+    required: [true, 'Email é obrigatório'],
+    unique: true,
+    lowercase: true,
+    trim: true,
+    validate: {
+      validator: (value: string) => validator.isEmail(value),
+      message: 'Email inválido'
+    }
   },
   password: {
     type: String,
-    required: true
+    required: [true, 'Senha é obrigatória'],
+    minlength: [6, 'Senha deve ter pelo menos 6 caracteres'],
+    select: false
   },
   role: {
     type: String,
@@ -74,6 +87,13 @@ const userSchema = new mongoose.Schema({
     required: function(this: any) {
       return this.role === 'professor';
     }
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  lastLogin: {
+    type: Date
   }
 }, {
   timestamps: true
@@ -85,16 +105,23 @@ userSchema.pre('save', async function(next) {
   
   try {
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    const hashedPassword = await bcrypt.hash(this.password, salt);
+    this.password = hashedPassword;
     next();
-  } catch (error) {
-    next(error as Error);
+  } catch (error: any) {
+    next(error);
   }
 });
 
 // Método para comparar senhas
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Método para atualizar último login
+userSchema.methods.updateLastLogin = async function(): Promise<void> {
+  this.lastLogin = new Date();
+  await this.save();
 };
 
 export const User = mongoose.model<IUser>('User', userSchema); 

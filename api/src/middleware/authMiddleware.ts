@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import logger from '../config/logger';
+import { User } from '../models/User';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 interface JwtPayload {
-  _id: string;
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'professor';
+  role: string;
   discipline?: string;
 }
 
@@ -23,7 +23,22 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     
-    req.user = decoded;
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ message: 'Usuário não encontrado' });
+    }
+
+    if (!user.isActive) {
+      return res.status(401).json({ message: 'Usuário inativo' });
+    }
+
+    req.user = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      discipline: user.discipline
+    };
 
     next();
   } catch (error) {
@@ -49,16 +64,16 @@ export const adminMiddleware = async (req: Request, res: Response, next: NextFun
   }
 };
 
-export const requireRole = (roles: string[]) => {
+export const roleMiddleware = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Autenticação necessária' });
+      return res.status(401).json({ message: 'Usuário não autenticado' });
     }
 
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({ message: 'Acesso negado' });
     }
 
-    return next();
+    next();
   };
 }; 

@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { PostController } from '../controllers/postController';
-import { authMiddleware, requireRole } from '../middleware/authMiddleware';
+import { PostController } from '../controllers/PostController';
+import { authMiddleware, roleMiddleware } from '../middleware/authMiddleware';
 
 const router = Router();
 
@@ -212,14 +212,14 @@ const router = Router();
  */
 
 // Rotas públicas
-router.get('/', PostController.listPosts);
+router.get('/', PostController.getAll);
 router.get('/search', PostController.searchPosts);
-router.get('/:id', PostController.getPostById);
+router.get('/:id', PostController.getById);
 
 // Rotas protegidas
-router.post('/', authMiddleware, requireRole(['professor', 'admin']), PostController.createPost);
-router.put('/:id', authMiddleware, requireRole(['professor', 'admin']), PostController.updatePost);
-router.delete('/:id', authMiddleware, requireRole(['professor', 'admin']), PostController.deletePost);
+router.post('/', authMiddleware, roleMiddleware(['admin', 'professor']), PostController.create);
+router.put('/:id', authMiddleware, roleMiddleware(['admin', 'professor']), PostController.update);
+router.delete('/:id', authMiddleware, roleMiddleware(['admin']), PostController.delete);
 
 // Rota de seed (apenas desenvolvimento)
 if (process.env.NODE_ENV === 'development') {

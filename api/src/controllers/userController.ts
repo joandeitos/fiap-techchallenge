@@ -35,7 +35,20 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 // Criar um novo usuário
 export const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = new User(req.body);
+    const { password, ...userData } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    logger.info('Criação de usuário:', { 
+      email: userData.email, 
+      hashedPassword,
+      originalPassword: password 
+    });
+    
+    const user = new User({
+      ...userData,
+      password: hashedPassword
+    });
+    
     await user.save();
     logger.info('Usuário criado com sucesso');
     res.status(201).json(user);

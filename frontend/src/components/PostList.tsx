@@ -24,11 +24,13 @@ import {
   DialogContentText,
   DialogActions,
   Button,
+  Fab,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AddIcon from '@mui/icons-material/Add';
 import DOMPurify from 'dompurify';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -97,6 +99,13 @@ const ActionButtons = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
+const CreatePostButton = styled(Fab)(({ theme }) => ({
+  position: 'fixed',
+  bottom: theme.spacing(4),
+  right: theme.spacing(4),
+  zIndex: 1000,
+}));
+
 type SortOrder = 'desc' | 'asc';
 
 interface PostListProps {
@@ -106,7 +115,7 @@ interface PostListProps {
 
 const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
   const [postsState, setPosts] = useState<Post[]>(posts);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const navigate = useNavigate();
   const theme = useTheme();
@@ -212,7 +221,7 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    setSearchTerm(value);
+    setSearchQuery(value);
     if (value.length >= 3) {
       fetchPosts(value);
     } else if (value.length === 0) {
@@ -224,44 +233,63 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
     return { __html: DOMPurify.sanitize(content) };
   };
 
+  const handleCreatePost = () => {
+    navigate('/post/new');
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg">
       <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center',
         mb: 4,
-        maxWidth: 600,
-        mx: 'auto',
-        width: '100%',
-        display: 'flex',
-        gap: 2,
-        alignItems: 'center'
+        gap: 3
       }}>
-        <TextField
-          fullWidth
-          label="Buscar posts"
-          variant="outlined"
-          value={searchTerm}
-          onChange={handleSearch}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          sx={{ 
+            textAlign: 'center',
+            width: '100%'
           }}
-        />
-        <Tooltip title={sortOrder === 'desc' ? 'Mais antigos primeiro' : 'Mais novos primeiro'}>
-          <IconButton 
-            onClick={handleToggleSort}
-            sx={{ 
-              bgcolor: 'background.paper',
-              boxShadow: 1,
-              '&:hover': {
-                bgcolor: 'action.hover'
-              }
+        >
+          Posts
+        </Typography>
+        
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 2, 
+          width: '100%',
+          maxWidth: '600px',
+          justifyContent: 'center'
+        }}>
+          <TextField
+            placeholder="Buscar posts..."
+            value={searchQuery}
+            onChange={handleSearch}
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
             }}
-          >
-            <SortIcon sx={{ 
-              transform: sortOrder === 'desc' ? 'rotate(0deg)' : 'rotate(180deg)',
-              transition: 'transform 0.2s'
-            }} />
-          </IconButton>
-        </Tooltip>
+            size="small"
+            fullWidth
+          />
+          <Tooltip title={`Ordenar por data (${sortOrder === 'desc' ? 'mais recente' : 'mais antigo'})`}>
+            <IconButton 
+              onClick={handleToggleSort}
+              sx={{ 
+                flexShrink: 0,
+                bgcolor: 'background.paper',
+                boxShadow: 1,
+                '&:hover': {
+                  bgcolor: 'action.hover'
+                }
+              }}
+            >
+              <SortIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
       {postsState.length === 0 ? (
@@ -378,6 +406,16 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
             </DialogActions>
           </Dialog>
         </>
+      )}
+
+      {user && (user.role === 'professor' || user.role === 'admin') && (
+        <CreatePostButton
+          color="primary"
+          aria-label="Criar post"
+          onClick={handleCreatePost}
+        >
+          <AddIcon />
+        </CreatePostButton>
       )}
     </Container>
   );

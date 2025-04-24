@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { User } from '../types/user';
 
 interface AuthResponse {
@@ -31,14 +31,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUser();
     }
   }, []);
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get<User>('/api/auth/me');
+      const response = await api.get<User>('/api/auth/me');
       setUser(response.data);
     } catch (error) {
       console.error('Erro ao carregar usuário:', error);
@@ -47,29 +47,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await axios.post<AuthResponse>('/api/auth/login', {
+    const response = await api.post<AuthResponse>('/api/auth/login', {
       email,
       password,
     });
 
     const { token, user } = response.data;
     localStorage.setItem('token', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setUser(user);
   };
 
   const register = async (data: RegisterData) => {
-    const response = await axios.post<AuthResponse>('/api/auth/register', data);
+    const response = await api.post<AuthResponse>('/api/auth/register', data);
 
     const { token, user } = response.data;
     localStorage.setItem('token', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setUser(user);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
 

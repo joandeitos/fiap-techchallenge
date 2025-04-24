@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 interface PostResponse {
   _id: string;
@@ -26,9 +27,17 @@ interface PostResponse {
 
 const NewPost: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
+
+  // Redireciona para a página inicial se o usuário não estiver logado
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,13 +49,17 @@ const NewPost: React.FC = () => {
       navigate(`/post/${response.data._id}`);
     } catch (error) {
       console.error('Erro ao criar post:', error);
-      setError('Erro ao criar o post');
+      setError('Erro ao criar o post. Verifique se você está logado e tente novamente.');
     }
   };
 
   const handleBack = () => {
     navigate('/');
   };
+
+  if (!user) {
+    return null; // Não renderiza nada enquanto redireciona
+  }
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>

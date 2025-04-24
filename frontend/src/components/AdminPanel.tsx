@@ -23,6 +23,11 @@ import {
   InputAdornment,
   Alert,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Search as SearchIcon } from '@mui/icons-material';
 import axios from 'axios';
@@ -89,7 +94,7 @@ const AdminPanel: React.FC = () => {
   const [editedUserName, setEditedUserName] = useState('');
   const [editedUserEmail, setEditedUserEmail] = useState('');
   const [editedUserRole, setEditedUserRole] = useState<'admin' | 'professor' | 'aluno'>('professor');
-  const [editedUserDiscipline, setEditedUserDiscipline] = useState('');
+  const [editedUserDiscipline, setEditedUserDiscipline] = useState('Not Defined');
   const [openUserDialog, setOpenUserDialog] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'post' | 'user'; title?: string; name?: string } | null>(null);
@@ -105,6 +110,7 @@ const AdminPanel: React.FC = () => {
   const [error, setError] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [userFormErrors, setUserFormErrors] = useState<Record<string, string>>({});
 
   const fetchPosts = async () => {
     try {
@@ -212,12 +218,53 @@ const AdminPanel: React.FC = () => {
     setEditedUserName(user.name);
     setEditedUserEmail(user.email);
     setEditedUserRole(user.role);
-    setEditedUserDiscipline(user.discipline || '');
+    setEditedUserDiscipline(user.discipline || 'Not Defined');
     setOpenUserDialog(true);
+    setUserFormErrors({});
+  };
+
+  const validateUserForm = () => {
+    const errors: Record<string, string> = {};
+    
+    if (editedUserRole === 'professor') {
+      if (!editedUserDiscipline || editedUserDiscipline.trim() === '') {
+        errors.discipline = 'A disciplina é obrigatória para professores';
+      }
+    }
+
+    setUserFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleRoleChange = (e: SelectChangeEvent<'admin' | 'professor' | 'aluno'>) => {
+    const newRole = e.target.value as 'admin' | 'professor' | 'aluno';
+    setEditedUserRole(newRole);
+    
+    if (newRole === 'professor') {
+      setEditedUserDiscipline('Not Defined');
+      // Valida imediatamente quando muda para professor
+      validateUserForm();
+    } else {
+      setEditedUserDiscipline('');
+      setUserFormErrors({});
+    }
+  };
+
+  const handleDisciplineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEditedUserDiscipline(value);
+    // Valida imediatamente quando o valor muda
+    if (editedUserRole === 'professor') {
+      validateUserForm();
+    }
   };
 
   const handleSaveUserEdit = async () => {
     if (!editUser) return;
+
+    if (!validateUserForm()) {
+      return;
+    }
 
     try {
       await axios.put(
@@ -226,7 +273,7 @@ const AdminPanel: React.FC = () => {
           name: editedUserName,
           email: editedUserEmail,
           role: editedUserRole,
-          ...(editedUserRole === 'professor' ? { discipline: editedUserDiscipline } : {}),
+          ...(editedUserRole === 'professor' ? { discipline: editedUserDiscipline || 'Not Defined' } : {}),
         },
         {
           headers: {
@@ -549,29 +596,32 @@ const AdminPanel: React.FC = () => {
             value={editedUserEmail}
             onChange={(e) => setEditedUserEmail(e.target.value)}
           />
-          <TextField
-            select
-            margin="dense"
-            label="Função"
-            fullWidth
-            value={editedUserRole}
-            onChange={(e) => setEditedUserRole(e.target.value as 'admin' | 'professor' | 'aluno')}
-            SelectProps={{
-              native: true,
-            }}
-          >
-            <option value="admin">Administrador</option>
-            <option value="professor">Professor</option>
-            <option value="aluno">Aluno</option>
-          </TextField>
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Função</InputLabel>
+            <Select
+              value={editedUserRole}
+              onChange={handleRoleChange}
+              label="Função"
+            >
+              <MenuItem value="admin">Administrador</MenuItem>
+              <MenuItem value="professor">Professor</MenuItem>
+              <MenuItem value="aluno">Aluno</MenuItem>
+            </Select>
+          </FormControl>
           {editedUserRole === 'professor' && (
-            <TextField
-              margin="dense"
-              label="Disciplina"
-              fullWidth
-              value={editedUserDiscipline}
-              onChange={(e) => setEditedUserDiscipline(e.target.value)}
-            />
+            <FormControl fullWidth margin="dense" error={!!userFormErrors.discipline}>
+              <TextField
+                label="Disciplina"
+                value={editedUserDiscipline}
+                onChange={handleDisciplineChange}
+                error={!!userFormErrors.discipline}
+                helperText={userFormErrors.discipline || "Campo obrigatório para professores"}
+                required
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </FormControl>
           )}
         </DialogContent>
         <DialogActions>

@@ -8,6 +8,11 @@ import {
   Paper,
   Alert,
   Grid,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
@@ -16,6 +21,7 @@ import { User } from '../types/user';
 interface ProfileData {
   name: string;
   email: string;
+  role?: string;
   discipline?: string;
   currentPassword?: string;
   newPassword?: string;
@@ -27,18 +33,53 @@ export default function Profile() {
   const [formData, setFormData] = useState<ProfileData>({
     name: user?.name || '',
     email: user?.email || '',
-    discipline: user?.discipline || '',
+    role: user?.role || 'aluno',
+    discipline: user?.discipline || 'Not Defined',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    
+    if (formData.role === 'professor' && (!formData.discipline || formData.discipline.trim() === '')) {
+      errors.discipline = 'A disciplina é obrigatória para professores';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
+
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,6 +87,11 @@ export default function Profile() {
     setError('');
     setSuccess('');
     setLoading(true);
+
+    if (!validateForm()) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const updateData: Partial<ProfileData> = {
@@ -57,8 +103,13 @@ export default function Profile() {
         updateData.email = formData.email;
       }
 
-      if (user?.role === 'professor') {
-        updateData.discipline = formData.discipline;
+      // Se estiver mudando para professor, inclui a disciplina
+      if (formData.role === 'professor') {
+        updateData.role = 'professor';
+        updateData.discipline = formData.discipline || 'Not Defined';
+      } else if (formData.role) {
+        updateData.role = formData.role;
+        updateData.discipline = undefined;
       }
 
       if (formData.currentPassword && formData.newPassword) {
@@ -128,7 +179,7 @@ export default function Profile() {
                   label="Nome"
                   name="name"
                   value={formData.name}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                 />
               </Grid>
@@ -140,22 +191,40 @@ export default function Profile() {
                   name="email"
                   type="email"
                   value={formData.email}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                   disabled={user?.role !== 'admin'}
                   helperText={user?.role !== 'admin' ? 'Apenas administradores podem alterar o e-mail' : ''}
                 />
               </Grid>
 
-              {user?.role === 'professor' && (
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel>Papel</InputLabel>
+                  <Select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleSelectChange}
+                    label="Papel"
+                  >
+                    <MenuItem value="aluno">Aluno</MenuItem>
+                    <MenuItem value="professor">Professor</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {formData.role === 'professor' && (
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
                     label="Disciplina"
                     name="discipline"
                     value={formData.discipline}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     required
+                    error={!!formErrors.discipline}
+                    helperText={formErrors.discipline || "Campo obrigatório para professores"}
+                    placeholder="Not Defined"
                   />
                 </Grid>
               )}
@@ -173,7 +242,7 @@ export default function Profile() {
                   name="currentPassword"
                   type="password"
                   value={formData.currentPassword || ''}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                 />
               </Grid>
 
@@ -184,7 +253,7 @@ export default function Profile() {
                   name="newPassword"
                   type="password"
                   value={formData.newPassword || ''}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                 />
               </Grid>
 
@@ -195,7 +264,7 @@ export default function Profile() {
                   name="confirmPassword"
                   type="password"
                   value={formData.confirmPassword || ''}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                 />
               </Grid>
 

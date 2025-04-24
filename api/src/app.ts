@@ -7,10 +7,10 @@ import logger from './config/logger';
 import connectDB from './config/database';
 import postRoutes from './routes/posts';
 import authRoutes from './routes/auth';
-import seedRoutes from './routes/seed';
 import userRoutes from './routes/users';
 import path from 'path';
 import dotenv from 'dotenv';
+import { initializeSystem } from './utils/initializeSystem';
 
 dotenv.config();
 
@@ -20,9 +20,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexão com o MongoDB
+// Conexão com o MongoDB e inicialização do sistema
 if (process.env.NODE_ENV !== 'test') {
-  connectDB();
+  connectDB().then(() => {
+    initializeSystem()
+      .then(() => logger.info('Sistema inicializado com sucesso'))
+      .catch(err => logger.error('Erro ao inicializar o sistema:', err));
+  });
 }
 
 // Configuração do Swagger
@@ -64,7 +68,6 @@ app.get('/', (_req, res) => {
 // Rotas
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
-app.use('/api/seed', seedRoutes);
 app.use('/api/users', userRoutes);
 
 // Tratamento de erros

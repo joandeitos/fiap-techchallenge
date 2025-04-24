@@ -1,9 +1,8 @@
 export interface AuthUser {
-  _id: string;
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'admin' | 'professor' | 'aluno';
   discipline?: string;
 }
 
