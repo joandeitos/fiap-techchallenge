@@ -1,159 +1,124 @@
-# Blog Tech Challenge - FIAP
+# TechChallenge FIAP - Sistema de Gerenciamento de Conteúdo Educacional
 
-## 📝 Descrição
-Sistema de blog desenvolvido como parte do Tech Challenge da FIAP, focado em criar uma plataforma moderna e responsiva para publicação e gerenciamento de conteúdo. O projeto utiliza uma arquitetura em microsserviços, com frontend em React/TypeScript e backend em Node.js/TypeScript.
+## Descrição
+Sistema de gerenciamento de conteúdo educacional desenvolvido como parte do TechChallenge da FIAP. O projeto consiste em uma aplicação full-stack que permite o gerenciamento de usuários, posts e conteúdo educacional.
 
-## 🚀 Funcionalidades
-
-### 👥 Gestão de Usuários
-- Autenticação JWT
-- Registro de novos usuários
-- Login seguro
-- Perfis de usuário (Admin/Autor)
-- Gerenciamento de permissões
-
-### 📑 Gestão de Posts
-- Criação, edição e exclusão de posts
-- Editor de texto rico
-- Suporte a markdown
-- Visualização em tempo real
-- Sistema de busca e filtros
-- Ordenação por data e relevância
-
-### 👨‍💼 Painel Administrativo
-- Dashboard para gestão de conteúdo
-- Gerenciamento de usuários
-- Métricas e estatísticas
-- Confirmação de ações críticas
-
-### 🎨 Interface
-- Tema claro/escuro
-- Design responsivo
-- Acessibilidade
-- UX moderno e intuitivo
-
-## 🛠 Tecnologias
-
-### Frontend
-- React 18
-- TypeScript
-- Material-UI v5
-- React Router v6
-- Axios
-- DOMPurify
-- Styled Components
+## Tecnologias Utilizadas
 
 ### Backend
 - Node.js
-- TypeScript
 - Express
+- TypeScript
 - MongoDB
-- JWT
-- Mongoose
-
-### DevOps
-- Docker
-- Docker Compose
-- Nginx
-- GitHub Actions
-
-## 🏗 Arquitetura
+- JWT para autenticação
+- Bcrypt para hash de senhas
 
 ### Frontend
-```
-frontend/
-├── public/          # Arquivos públicos
-├── src/
-│   ├── components/  # Componentes React
-│   ├── theme/       # Configuração de temas
-│   ├── services/    # Serviços e API
-│   └── types/       # Definições de tipos
-```
+- React
+- TypeScript
+- Material-UI
+- Axios
+- React Router
 
-### Backend
-```
-api/
-├── src/
-│   ├── config/      # Configurações
-│   ├── controllers/ # Controladores
-│   ├── middleware/  # Middlewares
-│   ├── models/      # Modelos Mongoose
-│   ├── routes/      # Rotas da API
-│   ├── seeds/       # Dados iniciais
-│   └── types/       # Definições de tipos
-```
-
-## 🚀 Como Executar
-
-### Pré-requisitos
+### Infraestrutura
 - Docker
 - Docker Compose
-- Node.js 18+
+- MongoDB
+
+## Funcionalidades
+
+### Autenticação e Autorização
+- Login de usuários (admin, professor, aluno)
+- Registro de novos usuários
+- Controle de acesso baseado em papéis (RBAC)
+- Validação de campos obrigatórios por papel
+
+### Gerenciamento de Usuários
+- Criação e edição de usuários
+- Definição de papéis (admin, professor, aluno)
+- Campo de disciplina obrigatório para professores
+- Validação de campos por tipo de usuário
+
+### Gerenciamento de Conteúdo
+- Criação e edição de posts
+- Visualização de posts
+- Filtragem e ordenação de conteúdo
+- Interface responsiva
+
+## Estrutura do Projeto
+
+```
+techchallenge_02/
+├── api/                    # Backend
+│   ├── src/
+│   │   ├── config/        # Configurações
+│   │   ├── controllers/   # Controladores
+│   │   ├── models/        # Modelos
+│   │   ├── routes/        # Rotas
+│   │   └── app.ts         # Aplicação principal
+│   └── package.json
+│
+├── frontend/               # Frontend
+│   ├── src/
+│   │   ├── components/    # Componentes React
+│   │   ├── services/      # Serviços (API)
+│   │   └── App.tsx        # Aplicação principal
+│   └── package.json
+│
+├── docker-compose.yml      # Configuração Docker
+└── README.md
+```
+
+## Requisitos do Sistema
+
+- Docker
+- Docker Compose
+- Node.js (versão 14 ou superior)
 - npm ou yarn
 
-### Instalação
+## Instalação e Execução
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/seu-usuario/techchallenge02.git
-cd techchallenge02
+git clone https://github.com/joandeitos/fiap-techchallenge.git
+cd fiap-techchallenge
 ```
 
-2. Configure as variáveis de ambiente:
+2. Inicie os containers:
 ```bash
-# Na raiz do projeto
-cp .env.example .env
+docker-compose up -d
 ```
 
-3. Inicie os containers:
-```bash
-docker compose up
-```
+3. Acesse a aplicação:
+- Frontend: http://localhost:3000
+- Backend: http://localhost:3001
 
-4. Acesse a aplicação:
-- Blog dos professores: http://localhost:8080
-- Documentação API: http://localhost:8080/api-docs
+## Usuários Iniciais
 
-## 🔄 Dados Iniciais
-Para carregar dados de teste, use o endpoint de seed:
-```bash
-curl -X POST http://localhost:4000/api/seed
-```
+### Administrador
+- Email: admin@fiap.com.br
+- Senha: admin123
 
-### Principais Endpoints
+### Professor
+- Email: professor@fiap.com.br
+- Senha: professor123
 
-#### Autenticação
-- POST /api/auth/login
-- POST /api/auth/register
+### Aluno
+- Email: aluno@fiap.com.br
+- Senha: aluno123
 
-#### Posts
-- GET /api/posts
-- POST /api/posts
-- GET /api/posts/:id
-- PUT /api/posts/:id
-- DELETE /api/posts/:id
+## Contribuição
 
-#### Usuários
-- GET /api/users
-- GET /api/users/:id
-- PUT /api/users/:id
-- DELETE /api/users/:id
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
 
-## Relato de Experiências e Desafios
-A equipe enfrentou desafios na configuração do ambiente de desenvolvimento e integração de microsserviços, além de implementar autenticação segura e testes automatizados, superando-os com colaboração e aprendizado contínuo.
-
-## 📄 Licença
+## Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-## ✨ Melhorias Futuras
+## Contato
 
-- [ ] Implementação de testes E2E
-- [ ] Sistema de notificações
-- [ ] Integração com serviços de mídia
-- [ ] PWA
-- [ ] Internacionalização
-
-## 🤝 Suporte
-
-Em caso de dúvidas ou problemas, abra uma issue ou entre em contato com a equipe de desenvolvimento.
+- GitHub: [joandeitos](https://github.com/joandeitos)
