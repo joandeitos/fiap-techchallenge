@@ -48,7 +48,7 @@ Sistema de gerenciamento de conteúdo educacional desenvolvido como parte do Tec
 ## Estrutura do Projeto
 
 ```
-techchallenge_02/
+techchallenge/
 ├── api/                    # Backend
 │   ├── src/
 │   │   ├── config/        # Configurações
@@ -97,15 +97,7 @@ docker-compose up -d
 
 ### Administrador
 - Email: admin@fiap.com.br
-- Senha: admin123
-
-### Professor
-- Email: professor@fiap.com.br
-- Senha: professor123
-
-### Aluno
-- Email: aluno@fiap.com.br
-- Senha: aluno123
+- Senha: 123456
 
 ## Contribuição
 
