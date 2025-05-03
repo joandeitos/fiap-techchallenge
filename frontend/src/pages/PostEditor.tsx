@@ -17,7 +17,8 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
-import axios from 'axios';
+import api from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Post {
   id?: string;
@@ -28,6 +29,7 @@ interface Post {
 export default function PostEditor() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [post, setPost] = useState<Post>({
     title: '',
     content: '',
@@ -38,15 +40,25 @@ export default function PostEditor() {
   const isEditing = Boolean(id);
 
   useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (user.role !== 'admin' && user.role !== 'professor') {
+      navigate('/');
+      return;
+    }
+
     if (id) {
       fetchPost();
     }
-  }, [id]);
+  }, [id, user, navigate]);
 
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const response = await axios.get<Post>(`/api/posts/${id}`);
+      const response = await api.get<Post>(`/api/posts/${id}`);
       setPost(response.data);
     } catch (error) {
       console.error('Erro ao carregar post:', error);
@@ -63,9 +75,9 @@ export default function PostEditor() {
 
     try {
       if (isEditing) {
-        await axios.put(`/api/posts/${id}`, post);
+        await api.put(`/api/posts/${id}`, post);
       } else {
-        await axios.post('/api/posts', post);
+        await api.post('/api/posts', post);
       }
       navigate('/');
     } catch (error) {
@@ -80,7 +92,7 @@ export default function PostEditor() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      await axios.delete(`/api/posts/${id}`, {
+      await api.delete(`/api/posts/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

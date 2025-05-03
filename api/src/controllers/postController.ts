@@ -7,10 +7,10 @@ import { Error as MongooseError } from 'mongoose';
 const transformPost = (post: any) => {
   if (!post) return null;
   const transformed = post.toObject();
-  transformed.id = transformed._id;
+  transformed.id = transformed._id.toString();
   delete transformed._id;
   if (transformed.author) {
-    transformed.author.id = transformed.author._id;
+    transformed.author.id = transformed.author._id.toString();
     delete transformed.author._id;
   }
   return transformed;
@@ -99,6 +99,7 @@ export const PostController = {
       post.title = title;
       post.content = content;
       await post.save();
+      await post.populate('author', 'name email');
 
       logger.info('Post atualizado com sucesso');
       res.json(transformPost(post));

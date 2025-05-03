@@ -161,6 +161,7 @@ const AdminPanel: React.FC = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        setError('');
         fetchPosts();
       } else {
         await axios.delete(`/api/users/${itemToDelete.id}`, {
@@ -168,10 +169,12 @@ const AdminPanel: React.FC = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        setError('');
         fetchUsers();
       }
     } catch (error) {
       console.error(`Erro ao deletar ${itemToDelete.type}:`, error);
+      setError(`Erro ao deletar ${itemToDelete.type}. Por favor, tente novamente.`);
     } finally {
       setDeleteConfirmOpen(false);
       setItemToDelete(null);
@@ -601,7 +604,7 @@ const AdminPanel: React.FC = () => {
             <Select
               value={editedUserRole}
               onChange={handleRoleChange}
-              label="Função"
+            label="Função"
             >
               <MenuItem value="admin">Administrador</MenuItem>
               <MenuItem value="professor">Professor</MenuItem>
@@ -610,9 +613,9 @@ const AdminPanel: React.FC = () => {
           </FormControl>
           {editedUserRole === 'professor' && (
             <FormControl fullWidth margin="dense" error={!!userFormErrors.discipline}>
-              <TextField
-                label="Disciplina"
-                value={editedUserDiscipline}
+            <TextField
+              label="Disciplina"
+              value={editedUserDiscipline}
                 onChange={handleDisciplineChange}
                 error={!!userFormErrors.discipline}
                 helperText={userFormErrors.discipline || "Campo obrigatório para professores"}
@@ -620,7 +623,7 @@ const AdminPanel: React.FC = () => {
                 InputLabelProps={{
                   shrink: true,
                 }}
-              />
+            />
             </FormControl>
           )}
         </DialogContent>

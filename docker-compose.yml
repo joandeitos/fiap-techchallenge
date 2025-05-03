@@ -27,6 +27,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/blog
       - NODE_ENV=development
+      - JWT_SECRET=techchallenge_secret_key_2024
     depends_on:
       - mongodb
     networks:
