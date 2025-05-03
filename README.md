@@ -91,7 +91,7 @@ docker-compose up -d
 
 3. Acesse a aplicação:
 - Frontend: [http://localhost:8080](http://localhost:8080/)
-- Backend: [http://localhost:3000](http://localhost:3000/)
+- Backend: [http://localhost:4000/api-docs/](http://localhost:4000/api-docs/)
 
 ## Usuários Iniciais
 
