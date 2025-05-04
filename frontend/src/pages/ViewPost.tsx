@@ -78,11 +78,16 @@ export default function ViewPost() {
     if (!post) return;
     try {
       const token = localStorage.getItem('token');
+
+      console.log(token);
+      console.log(post.id);
+      
       await axios.delete(`/api/posts/${post.id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      
       navigate('/');
     } catch (error) {
       console.error('Erro ao deletar post:', error);

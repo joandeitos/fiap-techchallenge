@@ -45,11 +45,11 @@ interface Author {
 }
 
 interface Post {
-  _id: string;
+  id: string;
   title: string;
   content: string;
   author: {
-    _id: string;
+    id: string;
     name: string;
     email: string;
   };
@@ -147,6 +147,9 @@ const AdminPanel: React.FC = () => {
   }, [token]);
 
   const handleDeleteClick = (id: string, type: 'post' | 'user', title?: string, name?: string) => {
+    //console.log('ID do post a ser excluído:', id);
+    //console.log('Tipo:', type);
+    //console.log('Título:', title);
     setItemToDelete({ id, type, title, name });
     setDeleteConfirmOpen(true);
   };
@@ -156,6 +159,16 @@ const AdminPanel: React.FC = () => {
 
     try {
       if (itemToDelete.type === 'post') {
+        const token = localStorage.getItem('token');
+        
+        //console.log('Token:', token);
+        //console.log('ID do post a ser excluído:', itemToDelete.id);
+
+        if (!itemToDelete.id) {
+          setError('ID do post não encontrado');
+          return;
+        }
+
         await axios.delete(`/api/posts/${itemToDelete.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -169,6 +182,7 @@ const AdminPanel: React.FC = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        
         setError('');
         fetchUsers();
       }
@@ -198,7 +212,7 @@ const AdminPanel: React.FC = () => {
 
     try {
       await axios.put(
-        `/api/posts/${editPost._id}`,
+        `/api/posts/${editPost.id}`,
         {
           title: editedTitle,
           content: editedContent,
@@ -441,7 +455,7 @@ const AdminPanel: React.FC = () => {
               </TableHead>
               <TableBody>
                 {sortedAndFilteredPosts.map((post) => (
-                  <TableRow key={post._id}>
+                  <TableRow key={post.id}>
                     <TableCell>{post.title}</TableCell>
                     <TableCell>{post.author.name || post.author.email}</TableCell>
                     <TableCell>
@@ -452,7 +466,7 @@ const AdminPanel: React.FC = () => {
                         <EditIcon />
                       </IconButton>
                       <IconButton
-                        onClick={() => handleDeleteClick(post._id, 'post', post.title)}
+                        onClick={() => handleDeleteClick(post.id, 'post', post.title)}
                         color="error"
                       >
                         <DeleteIcon />
@@ -538,7 +552,10 @@ const AdminPanel: React.FC = () => {
                         <EditIcon />
                       </IconButton>
                       <IconButton
-                        onClick={() => handleDeleteClick(user._id, 'user', undefined, user.name || user.email)}
+                        onClick={() => {
+                          console.log(user);
+                          handleDeleteClick(user._id, 'user', undefined, user.name || user.email)}
+                        } 
                         color="error"
                       >
                         <DeleteIcon />
