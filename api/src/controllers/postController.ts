@@ -90,7 +90,10 @@ export const PostController = {
         return;
       }
 
-      if (post.author.toString() !== req.user?.id && req.user?.role !== 'admin') {
+      if (post.author.toString() !== req.user?.id && 
+          req.user?.role !== 'admin' &&
+          req.user?.role !== 'professor'
+      ) {
         res.status(403).json({ message: 'Acesso negado' });
         return;
       }
