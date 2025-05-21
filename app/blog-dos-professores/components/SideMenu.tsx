@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SideMenuProps } from '@/types';
 
 const { width } = Dimensions.get('window');
-const MENU_WIDTH = width * 0.7;
+const MENU_WIDTH = width * 0.5;
 
 const SideMenu: React.FC<SideMenuProps> = ({
   visible,
