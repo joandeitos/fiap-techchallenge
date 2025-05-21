@@ -209,7 +209,7 @@ export default function HomeScreen() {
         
         <View style={styles.headerCenter}>
           {isAdmin && (
-            <Text style={styles.headerTitle}>Administrativo</Text>
+            <Text style={styles.headerTitle}>Admin</Text>
           )}
         </View>
         
