@@ -37,7 +37,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose, isDarkMode }) => {
             styles.title,
             isDarkMode ? styles.textDark : styles.textLight
           ]}>
-            Tech Challenge 02
+            Tech Challenge
           </Text>
           
           <Text 
