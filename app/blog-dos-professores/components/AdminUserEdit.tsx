@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
     borderColor: '#007aff',
   },
   roleButtonText: {
-    color: '#333',
+    color: '#ff3b30',
     fontWeight: '500',
   },
   roleButtonTextActive: {
